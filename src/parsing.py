@@ -1,4 +1,5 @@
 from class_struct import *
+import interface
 
 def     find_key(rule, key):
     i = 0
@@ -29,7 +30,7 @@ def     save_rule(str, index, rule):
                     rule[i].add_node(rule[l], Sep.AND)
                 elif str[j + 1] == '|':
                     rule[i].add_node(rule[l], Sep.OR)
-                elif str[j + 1] == '+':
+                elif str[j + 1] == '^':
                     rule[i].add_node(rule[l], Sep.XOR)
             j += 1
 
@@ -59,17 +60,25 @@ def     get_assert(str, rule):
                 break
         i += 1
 
-def     parse_data(data):
+def     remove_com(str):
+    index = str.find('#')
+    if (index != -1):
+        return (str[:index])
+    else:
+        return (str)
+
+def     parse_data(data, quest, asser):
     rule = []
     for str in data:
+        str = remove_com(str.replace(' ', ''))
         dlen = len(str)
         if (dlen == 0 or str[0] == '#'):
             continue
         elif (str[0] == '='):
-            asser = str.replace('=', '')
+            asser.set(str.replace('=', ''))
             get_assert(str, rule)
         elif (str[0] == '?'):
-            quest = str.replace('?', '')
+            quest.set(str.replace('?', ''))
         else:
             get_rule(str.replace(' ', '').split("=>"), rule)
-    return (rule, quest, asser)
+    return (rule)
