@@ -1,140 +1,136 @@
-import class_struct
-import parsing
-import solve
-from tkinter import *
+import structure as st
+import tkinter as tk
+import tkinter.filedialog as tkf
+from tkinter.messagebox import askquestion
+import os.path
 
-def     clavier(event):
-    #global class_struct.fenetre
+def rm_rules():
+    for elem in st.rules:
+        elem.frame.destroy()
+    rules = []
+
+def exit():
+    rm_rules()
+    st.root.destroy()
+    st.root.quit()
+
+def keyboard(event):
     touch = event.keysym
     if (touch == "Escape"):
-        class_struct.fenetre.quit()
+        exit()
     elif (touch == "Return"):
-        get_value()
+        default()
 
-def     get_value():
-    #global class_struct.asser
-    #global class_struct.quest
-    tmp_ass = "=" + class_struct.asser.get()
-    tmp_que = class_struct.quest.get()
-    class_struct.rule = []
-    for elem in class_struct.block:
-       tmp = []
-       tmp.append(elem.value[0].get().replace(' ', ''))
-       tmp.append(elem.value[2].get().replace(' ', ''))
-       parsing.get_rule(tmp, class_struct.rule)
-    parsing.get_assert(tmp_ass, class_struct.rule)
-    solve.solve_quest(class_struct.rule, tmp_que)
+def remove_comment(list):
+    data = []
+    for elem in list:
+        find = elem.find('#')
+        if (len(elem) == 0 or elem[0] == '#'):
+            continue
+        elif (find != -1):
+            elem = elem[:find]
+        if (elem[0] == '?'):
+            st.quest.set(elem[1:])
+            continue
+        elif (elem[0] == '='):
+            st.asser.set(elem[1:])
+            continue
+        data.append(elem)
+    return (data)
 
-
-def     del_node():
-    for elem in class_struct.block:
-        if elem.frame.winfo_exists() == False:
-            class_struct.block.remove(elem)
-    for elem in class_struct.block:
-        print(1, end='')
-    print()
-
-
-def     add_rule():
-    frame = Frame(class_struct.fenetre, borderwidth=2, relief=GROOVE)
-    frame.pack(side=TOP)
-    bouton=Button(frame, text="❌", command=lambda: [frame.destroy(),
-                                                      del_node()])
-    bouton.pack(side=RIGHT)
-    value = []
-    value.append(StringVar())
-    value.append(StringVar())
-    value.append(StringVar())
-    value[0].set("A + B")
-    value[1].set("=>")
-    value[2].set("C")
-    class_struct.block.append(class_struct.Block(value, frame))
-    entree = Entry(frame, textvariable=value[0], width=20)
-    entree.pack(side=LEFT)
-    entree = Entry(frame, textvariable=value[1], width=5)
-    entree.pack(side=LEFT)
-    entree = Entry(frame, textvariable=value[2], width=20)
-    entree.pack(side=LEFT)
-
-def     add_txt_rule(impl):
-    frame = Frame(class_struct.fenetre, borderwidth=2, relief=GROOVE)
-    frame.pack(side=TOP)
-    bouton=Button(frame, text="❌", command=lambda: [frame.destroy(),
-                                                      del_node()])
-    bouton.pack(side=RIGHT)
-    value = []
-    value.append(StringVar())
-    value.append(StringVar())
-    value.append(StringVar())
-    value[0].set(impl[0])
-    value[1].set("=>")
-    value[2].set(impl[1])
-    class_struct.block.append(class_struct.Block(value, frame))
-    entree = Entry(frame, textvariable=value[0], width=20)
-    entree.pack(side=LEFT)
-    entree = Entry(frame, textvariable=value[1], width=5)
-    entree.pack(side=LEFT)
-    entree = Entry(frame, textvariable=value[2], width=20)
-    entree.pack(side=LEFT)
-
-def     set_button(implies, frame, fasser):
-    if (len(implies) == 0):
-        ass = "A + B"
-        imp = "C"
+def get_rule(str):
+    if (str.find("<=>") != -1):
+        split = str.split("<=>")
+        mid = "<=>"
     else:
-        ass = implies[0]
-        imp = implies[1]
-    bouton=Button(frame, text="❌", command=lambda: [frame.destroy(),
-                                                          del_node()])
-    bouton.pack(side=RIGHT)
-    value = []
-    value.append(StringVar())
-    value.append(StringVar())
-    value.append(StringVar())
-    value[0].set(ass)
-    value[1].set("=>")
-    value[2].set(imp)
-    if (len(class_struct.asser.get()) == 0):
-        class_struct.asser.set("AB")
-    if (len(class_struct.quest.get()) == 0):
-        class_struct.quest.set("C")
-    class_struct.block.append(class_struct.Block(value, frame))
-    entree = Entry(frame, textvariable=value[0], width=20)
-    entree.pack(side=LEFT)
-    entree = Entry(frame, textvariable=value[1], width=5)
-    entree.pack(side=LEFT)
-    entree = Entry(frame, textvariable=value[2], width=20)
-    entree.pack(side=LEFT)
-    entree = Entry(fasser, textvariable=class_struct.asser, width=20)
-    entree.pack()
-    entree = Entry(fasser, textvariable=class_struct.quest, width=20)
-    entree.pack()
+        split = str.split("=>")
+        mid = "=>"
+    frame = tk.Frame(st.root)
+    rule = st.Rule(frame)
+    rule.create_rule(split[0], split[1], mid)
+    st.rules.append(rule)
 
-def     set_graph():
-    frame = Frame(class_struct.fenetre, borderwidth=2, relief=GROOVE)
-    frame.pack(side=TOP)
-    bframe = Frame(class_struct.fenetre, borderwidth=2, relief=GROOVE)
-    bframe.pack(side=BOTTOM)
-    brule=Button(bframe, text="➕", command=add_rule)
-    brule.pack()
-    refresh=Button(bframe, text="♻︎", command=get_value)
-    refresh.pack()
-    fasser = Frame(class_struct.fenetre, borderwidth=2, relief=GROOVE)
-    fasser.pack(side=BOTTOM)
-    get_asser = Frame(fasser, relief=GROOVE)
-    get_asser.pack(side=LEFT)
-    label = Label(get_asser, text="=")
-    label.pack(side=TOP)
-    label = Label(get_asser, text="?")
-    label.pack(side=BOTTOM)
-    return (frame, fasser)
+def set_new_rule():
+    frame = tk.Frame(st.root)
+    rule = st.Rule(frame)
+    rule.create_rule("A + B", "C", "=>")
+    st.rules.append(rule)
 
+def default():
+    print("Quest : " + st.quest.get() + ", asser : " + st.asser.get())
+    print("DEFAULT");
 
-def     get_graph():
-    frame, fasser = set_graph()
-    #global class_struct.frame
-    
-    if (len(class_struct.rule) == 0):
-        set_button([], frame, fasser)
-    class_struct.fenetre.mainloop()
+def import_file():
+    filepath = tkf.askopenfilename(title="Open file", filetypes=[("all", ".txt")])
+    if (os.path.isfile(filepath) == False):
+        return
+    file = open(filepath, "r")
+    rm_rules()
+    read = file.read().split('\n')
+    file.close()
+    data = remove_comment(read)
+    for str in data:
+        get_rule(str)
+
+def deal_ask(event):
+    global ask
+    touch = event.keysym
+    if touch == "Escape":
+        ask.destroy()
+
+def get_save():
+    name = tkf.asksaveasfilename(defaultextension=".txt")
+    if (name == ""):
+        return 
+    if (os.path.isfile(name) == True):
+        file = open(name, "w")
+    else:
+        file = open(name, "x")
+    for elem in st.rules:
+        file.write(elem.left.get() + elem.mid.get() + elem.right.get() + "\n")
+    file.write("=" + st.asser.get() + "\n")
+    file.write("?" + st.quest.get() + "\n")
+    file.close()
+
+def set_menu():
+    menubar = tk.Menu(st.root)
+    file = tk.Menu(menubar, tearoff=0)
+    file.add_command(label="Save", command=get_save)
+    file.add_command(label="Import", command=import_file)
+    file.add_separator()
+    file.add_command(label="Exit", command=exit)
+    menubar.add_cascade(label="File", menu=file)
+    edit = tk.Menu(menubar, tearoff=0)
+    edit.add_command(label="Add", command=set_new_rule)
+    edit.add_command(label="Clean", command=rm_rules)
+    menubar.add_cascade(label="Edit", menu=edit)
+    help = tk.Menu(menubar, tearoff=0)
+    help.add_command(label="About", command=default)
+    menubar.add_cascade(label="Help", menu=help)
+    st.root.config(menu=menubar)
+
+def set_interface(data):
+    set_menu()
+    for str in data:
+        get_rule(str)
+    frame = tk.Frame(st.root)
+    add = tk.Button(frame, text="➕", command=set_new_rule)
+    add.pack(side=tk.TOP)
+    reload = tk.Button(frame, text="♻︎", command=default)
+    reload.pack(side=tk.TOP)
+    asframe = tk.Frame(frame)
+    aslabel = tk.Label(asframe, text='=')
+    aslabel.pack(side=tk.LEFT)
+    asentry = tk.Entry(asframe, textvariable=st.asser)
+    asentry.pack(side=tk.LEFT)
+    asframe.pack(side=tk.TOP)
+    quframe = tk.Frame(frame)
+    qulabel = tk.Label(quframe, text='?')
+    qulabel.pack(side=tk.LEFT)
+    quentry = tk.Entry(quframe, textvariable=st.quest)
+    quentry.pack(side=tk.LEFT)
+    solve = tk.Button(frame, text="SOLVE!", command=default)
+    solve.pack(side=tk.BOTTOM)
+    quframe.pack(side=tk.TOP)
+    frame.pack(side=tk.BOTTOM)
 
